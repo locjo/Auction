@@ -1,0 +1,40 @@
+spring:
+  application:
+    name: auction-system
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/auction}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:1234}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+server:
+  port: ${SERVER_PORT:8080}
+
+app:
+  cors:
+    allowed-origin: ${FRONTEND_ORIGIN:http://localhost:5173}
+  auth:
+    refresh-cookie:
+      secure: ${REFRESH_COOKIE_SECURE:false}
+      same-site: ${REFRESH_COOKIE_SAME_SITE:Lax}
+  rate-limit:
+    max-requests: ${RATE_LIMIT_MAX_REQUESTS:120}
+    window: ${RATE_LIMIT_WINDOW:1m}
+  jwt:
+    # Set JWT_SECRET to a base64-encoded secret of at least 32 bytes outside local development.
+    secret: ${JWT_SECRET:bG9jYWwtZGV2ZWxvcG1lbnQtc2VjcmV0LWZvci1hdWN0aW9uLXN5c3RlbS0zMg==}
+    access-token-expiration: 15m
+    refresh-token-expiration: 7d
+
+logging:
+  level:
+    org.springframework.security: INFO
