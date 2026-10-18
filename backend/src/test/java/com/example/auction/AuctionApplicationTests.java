@@ -1,4 +1,4 @@
-package com.auction.system;
+package com.example.auction;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

@@ -1,5 +1,9 @@
 package com.auction.system.modules.auth.service;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.auction.system.exception.AppException;
 import com.auction.system.exception.ErrorCode;
 import com.auction.system.modules.auth.dto.request.LoginRequest;
@@ -9,31 +13,42 @@ import com.auction.system.modules.auth.entity.RefreshToken;
 import com.auction.system.modules.auth.repository.RefreshTokenRepository;
 import com.auction.system.modules.user.entity.User;
 import com.auction.system.modules.user.repository.UserRepository;
+import com.auction.system.modules.wallet.entity.Wallet;
+import com.auction.system.modules.wallet.repository.WalletRepository;
 import com.auction.system.security.JwtTokenProvider;
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
-import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@RequiredArgsConstructor
 public class AuthService {
     private final UserRepository users;
+    private final WalletRepository wallets;
     private final RefreshTokenRepository refreshTokens;
     private final PasswordEncoder passwordEncoder; 
     private final JwtTokenProvider jwtTokenProvider;
+
+    public AuthService(UserRepository users, WalletRepository wallets,
+                       RefreshTokenRepository refreshTokens, PasswordEncoder passwordEncoder,
+                       JwtTokenProvider jwtTokenProvider) {
+        this.users = users;
+        this.wallets = wallets;
+        this.refreshTokens = refreshTokens;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtTokenProvider = jwtTokenProvider;
+    }
+
     @Transactional
     public AuthTokenPair register(RegisterRequest request) {
         String email = request.email().trim().toLowerCase();
         if (users.existsByEmailIgnoreCase(email)) throw new AppException(ErrorCode.EMAIL_ALREADY_EXISTS);
         User user = users.save(new User(email, passwordEncoder.encode(request.password()), request.fullName().trim(), request.phone()));
+        wallets.save(new Wallet(user));
         return tokens(user);
     }
     @Transactional
     public AuthTokenPair login(LoginRequest request) {
-        User user = users.findByEmailIgnoreCase(request.email().trim()).orElseThrow(() -> new AppException(ErrorCode.INVALID_CREDENTIALS));
+        User user = users.findByEmailIgnoreCase(request.email().trim().toLowerCase()).orElseThrow(() -> new AppException(ErrorCode.INVALID_CREDENTIALS));
         if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) throw new AppException(ErrorCode.INVALID_CREDENTIALS);
         if (user.getStatus() != User.Status.ACTIVE) throw new AppException(ErrorCode.ACCOUNT_LOCKED);
         return tokens(user);

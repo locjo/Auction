@@ -1,13 +1,15 @@
 # Project Context & Rules: Online Auction System
 
 ## 1. Tech Stack (Công nghệ cốt lõi)
-- **Language & Framework:** Java 17+, Spring Boot 3.x
+- **Language & Framework:** Java 17, Spring Boot 3.5.3
 - **Database & ORM:** PostgreSQL / MySQL, Spring Data JPA, Hibernate
 - **Security:** Spring Security, JWT (JSON Web Token), OAuth2 Client
 - **Real-time Bidding:** Spring WebSocket (STOMP protocol)
 - **Caching & Concurrency:** Spring Data Redis (Cache & Distributed Lock)
 - **Payment Gateway:** VNPay Sandbox (Tích hợp mã hóa HMAC-SHA512, IPN & Return URL)
-- **Build Tool:** Maven / Gradle
+- **Build Tool:** Maven Wrapper 3.10.0
+
+Phiên bản backend được ghim trong `backend/pom.xml`: Java/release 17, Spring Boot 3.5.3, Lombok 1.18.48 và JJWT 0.12.6. Runtime Docker dùng Eclipse Temurin 17; PostgreSQL 17 và Redis 7 dùng image riêng tương ứng.
 
 ## 2. Architecture & Package Structure (Kiến trúc phân lớp & Module)
 Dự án áp dụng mô hình **Layered Architecture (N-tier)** kết hợp phân chia theo module nghiệp vụ:

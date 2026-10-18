@@ -1,17 +1,21 @@
 package com.auction.system.modules.auth.entity;
 
 import com.auction.system.modules.user.entity.User;
+
 import jakarta.persistence.*;
 import lombok.AccessLevel;
-import lombok.Getter;
+import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 import java.util.UUID;
 
+import lombok.Data;
+
 @Entity
-@Getter
+@Data
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+
 @Table(name = "auth_refresh_tokens",
         indexes = @Index(name = "idx_refresh_token_user", columnList = "user_id"),
         uniqueConstraints = @UniqueConstraint(name = "uk_refresh_token_jti", columnNames = "token_id"))

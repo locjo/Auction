@@ -1,4 +1,19 @@
 services:
+  api:
+    build: .
+    container_name: auction-api
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/auction
+      DB_USERNAME: postgres
+      DB_PASSWORD: 1234
+      REDIS_HOST: redis
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
   postgres:
     image: postgres:17-alpine
     container_name: auction-postgres

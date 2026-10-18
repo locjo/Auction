@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -42,7 +43,14 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.GET, "/api/v1/categories", "/api/v1/categories/**").permitAll()
+                        .requestMatchers("/api/v1/categories", "/api/v1/categories/**").hasRole("ADMIN")
                         .requestMatchers("/api/v1/auth/**", "/api/v1/health").permitAll()
+                        .requestMatchers("/api/v1/products/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/v1/products/seller/**").hasRole("SELLER")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/products").hasRole("SELLER")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/products", "/api/v1/products/*").permitAll()
+                        .requestMatchers("/api/v1/wallets/**").authenticated()
                         .anyRequest().authenticated())
                 .addFilterBefore(rateLimiterFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterAfter(jwtFilter, RateLimiterFilter.class)
