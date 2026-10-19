@@ -10,6 +10,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.stream.Collectors;
@@ -25,6 +26,12 @@ public class GlobalExceptionHandler {
                 .body(ErrorResponse.of(code, ex.getMessage(), request.getRequestURI()));
     }
 
+    @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+    public ResponseEntity<ErrorResponse> handleOptimisticLock(
+            ObjectOptimisticLockingFailureException ex, HttpServletRequest request) {
+        return error(ErrorCode.BID_CONFLICT, ErrorCode.BID_CONFLICT.getDefaultMessage(), request);
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidation(
             MethodArgumentNotValidException ex, HttpServletRequest request) {
@@ -37,13 +44,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponse> handleUnreadableBody(
             HttpMessageNotReadableException ex, HttpServletRequest request) {
-        return error(ErrorCode.INVALID_INPUT, "Invalid request body", request);
+        return error(ErrorCode.INVALID_INPUT, "Nội dung yêu cầu không hợp lệ", request);
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ErrorResponse> handleTypeMismatch(
             MethodArgumentTypeMismatchException ex, HttpServletRequest request) {
-        return error(ErrorCode.INVALID_INPUT, "Invalid value for parameter: " + ex.getName(), request);
+        return error(ErrorCode.INVALID_INPUT, "Giá trị tham số không hợp lệ: " + ex.getName(), request);
     }
 
     @ExceptionHandler(NoResourceFoundException.class)
@@ -54,7 +61,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleUnexpected(Exception ex, HttpServletRequest request) {
-        log.error("Unexpected error while handling {} {}", request.getMethod(), request.getRequestURI(), ex);
+        log.error("Đã xảy ra lỗi khi xử lý {} {}", request.getMethod(), request.getRequestURI(), ex);
         return error(ErrorCode.INTERNAL_SERVER_ERROR, ErrorCode.INTERNAL_SERVER_ERROR.getDefaultMessage(), request);
     }
 

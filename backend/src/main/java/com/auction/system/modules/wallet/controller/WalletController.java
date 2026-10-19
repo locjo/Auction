@@ -19,6 +19,6 @@ public class WalletController {
 
     @GetMapping("/me")
     public ApiResponse<WalletResponse> getCurrentWallet(Authentication authentication) {
-        return ApiResponse.success("Wallet retrieved successfully", walletService.getWallet(authentication.getName()));
+        return ApiResponse.success("Lấy thông tin ví thành công", walletService.getWallet(authentication.getName()));
     }
 }

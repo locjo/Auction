@@ -2,6 +2,7 @@ package com.auction.system.modules.order.entity;
 
 import com.auction.system.modules.product.entity.Product;
 import com.auction.system.modules.user.entity.User;
+import com.auction.system.common.AuditableEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -13,7 +14,7 @@ import java.math.BigDecimal;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "orders", uniqueConstraints = @UniqueConstraint(name = "uk_orders_product", columnNames = "product_id"))
-public class Order {
+public class Order extends AuditableEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

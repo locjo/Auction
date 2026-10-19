@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.time.Instant;
+import org.springframework.scheduling.annotation.Scheduled;
 
 @Service
 public class ProductService {
@@ -28,8 +30,8 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public List<ProductResponse> getPublicProducts(Long categoryId, String keyword) {
-        return products.search(Product.Status.ACTIVE, categoryId, normalizeKeyword(keyword))
+    public List<ProductResponse> getPublicProducts(String keyword) {
+        return products.search(Product.Status.ACTIVE, normalizeKeyword(keyword))
                 .stream().map(ProductResponse::from).toList();
     }
 
@@ -37,19 +39,19 @@ public class ProductService {
     public ProductResponse getPublicProduct(Long id) {
         Product product = products.findById(id)
                 .filter(item -> item.getStatus() == Product.Status.ACTIVE)
-                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Product not found"));
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Không tìm thấy sản phẩm"));
         return ProductResponse.from(product);
     }
 
     @Transactional
     public ProductResponse create(String sellerEmail, CreateProductRequest request) {
         if (!request.endTime().isAfter(request.startTime())) {
-            throw new AppException(ErrorCode.INVALID_INPUT, "endTime must be after startTime");
+            throw new AppException(ErrorCode.INVALID_INPUT, "Thời gian kết thúc phải sau thời gian bắt đầu");
         }
         User seller = users.findByEmailIgnoreCase(sellerEmail)
-                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Seller not found"));
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Không tìm thấy người bán"));
         Category category = categories.findById(request.categoryId())
-                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Category not found"));
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Không tìm thấy danh mục"));
         Product product = products.save(new Product(seller, category, request.title().trim(),
                 request.description(), request.initialPrice(), request.startTime(), request.endTime()));
         return ProductResponse.from(product);
@@ -71,17 +73,27 @@ public class ProductService {
     public ProductResponse approve(Long id) {
         Product product = findProduct(id);
         if (product.getStatus() != Product.Status.PENDING) {
-            throw new AppException(ErrorCode.CONFLICT, "Only pending products can be approved");
+            throw new AppException(ErrorCode.CONFLICT, "Chỉ có thể duyệt sản phẩm đang chờ duyệt");
         }
-        product.approve();
+        product.approve(Instant.now());
         return ProductResponse.from(product);
+    }
+
+    @Transactional
+    @Scheduled(fixedDelay = 5_000)
+    public void activateScheduledProducts() {
+        Instant now = Instant.now();
+        products.findByStatusAndStartTimeLessThanEqual(Product.Status.SCHEDULED, now)
+                .forEach(Product::activate);
     }
 
     @Transactional
     public ProductResponse cancel(Long id) {
         Product product = findProduct(id);
-        if (product.getStatus() != Product.Status.PENDING && product.getStatus() != Product.Status.ACTIVE) {
-            throw new AppException(ErrorCode.CONFLICT, "Only pending or active products can be cancelled");
+        if (product.getStatus() != Product.Status.PENDING
+                && product.getStatus() != Product.Status.SCHEDULED
+                && product.getStatus() != Product.Status.ACTIVE) {
+            throw new AppException(ErrorCode.CONFLICT, "Chỉ có thể hủy sản phẩm đang chờ duyệt, đã lên lịch hoặc đang đấu giá");
         }
         product.cancel();
         return ProductResponse.from(product);
@@ -89,7 +101,7 @@ public class ProductService {
 
     private Product findProduct(Long id) {
         return products.findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Product not found"));
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Không tìm thấy sản phẩm"));
     }
 
     private String normalizeKeyword(String keyword) {

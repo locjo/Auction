@@ -9,6 +9,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class HealthController {
     @GetMapping
     public ApiResponse<String> health() {
-        return ApiResponse.success("Backend is running", "UP");
+        return ApiResponse.success("Máy chủ đang hoạt động", "UP");
     }
 }

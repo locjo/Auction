@@ -20,6 +20,6 @@ public class UserController {
     @GetMapping("/me")
     public ApiResponse<UserProfileResponse> getCurrentUser(Authentication authentication) {
         UserProfileResponse profile = userService.getProfile(authentication.getName());
-        return ApiResponse.success("User profile retrieved successfully", profile);
+        return ApiResponse.success("Lấy thông tin hồ sơ thành công", profile);
     }
 }

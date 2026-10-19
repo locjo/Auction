@@ -1,16 +1,16 @@
 package com.auction.system.modules.user.entity;
 
 import jakarta.persistence.*;
+import com.auction.system.common.AuditableEntity;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import java.time.Instant;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "users", uniqueConstraints = @UniqueConstraint(name = "uk_users_email", columnNames = "email"))
-public class User {
+public class User extends AuditableEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(nullable = false, unique = true, length = 255)
@@ -25,9 +25,6 @@ public class User {
     private Role role = Role.BIDDER;
     @Enumerated(EnumType.STRING) @Column(nullable = false, length = 50)
     private Status status = Status.ACTIVE;
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private Instant createdAt = Instant.now();
-
     public User(String email, String passwordHash, String fullName, String phone) {
         this.email = email; this.passwordHash = passwordHash; this.fullName = fullName; this.phone = phone;
     }

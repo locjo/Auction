@@ -2,13 +2,13 @@ package com.auction.system.modules.bid.entity;
 
 import com.auction.system.modules.product.entity.Product;
 import com.auction.system.modules.user.entity.User;
+import com.auction.system.common.AuditableEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.Instant;
 
 @Entity
 @Getter
@@ -17,7 +17,7 @@ import java.time.Instant;
         @Index(name = "idx_bids_product", columnList = "product_id"),
         @Index(name = "idx_bids_user", columnList = "user_id")
 })
-public class Bid {
+public class Bid extends AuditableEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -32,9 +32,6 @@ public class Bid {
 
     @Column(name = "bid_amount", nullable = false, precision = 19, scale = 2)
     private BigDecimal bidAmount;
-
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private Instant createdAt = Instant.now();
 
     public Bid(Product product, User user, BigDecimal bidAmount) {
         this.product = product;

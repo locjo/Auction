@@ -3,6 +3,7 @@ package com.auction.system.modules.product.entity;
 import java.math.BigDecimal;
 import java.time.Instant;
 
+import com.auction.system.common.AuditableEntity;
 import com.auction.system.modules.category.entity.Category;
 import com.auction.system.modules.user.entity.User;
 
@@ -30,7 +31,7 @@ import lombok.NoArgsConstructor;
         @Index(name = "idx_products_seller", columnList = "seller_id"),
         @Index(name = "idx_products_category", columnList = "category_id")
 })
-public class Product {
+public class Product extends AuditableEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -73,9 +74,6 @@ public class Product {
     @Column(nullable = false)
     private Long version;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private Instant createdAt = Instant.now();
-
     public Product(User seller, Category category, String title, String description,
                    BigDecimal initialPrice, Instant startTime, Instant endTime) {
         this.seller = seller;
@@ -89,7 +87,11 @@ public class Product {
         this.status = Status.PENDING;
     }
 
-    public void approve() {
+    public void approve(Instant now) {
+        this.status = startTime.isAfter(now) ? Status.SCHEDULED : Status.ACTIVE;
+    }
+
+    public void activate() {
         this.status = Status.ACTIVE;
     }
 
@@ -97,5 +99,9 @@ public class Product {
         this.status = Status.CANCELLED;
     }
 
-    public enum Status { PENDING, ACTIVE, SCHEDULED, LIVE, ENDED, CANCELLED }
+    public void updateCurrentPrice(BigDecimal currentPrice) {
+        this.currentPrice = currentPrice;
+    }
+
+    public enum Status { PENDING, ACTIVE, SCHEDULED, ENDED, CANCELLED }
 }

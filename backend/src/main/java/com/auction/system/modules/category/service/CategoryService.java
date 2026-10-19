@@ -36,7 +36,7 @@ public class CategoryService {
     public CategoryResponse create(CategoryRequest request) {
         String name = request.name().trim();
         if (categories.existsByNameIgnoreCase(name)) {
-            throw new AppException(ErrorCode.CONFLICT, "Category name already exists");
+            throw new AppException(ErrorCode.CONFLICT, "Tên danh mục đã tồn tại");
         }
         return CategoryResponse.from(categories.save(new Category(null, name)));
     }
@@ -46,7 +46,7 @@ public class CategoryService {
         Category category = findCategory(id);
         String name = request.name().trim();
         if (categories.existsByNameIgnoreCaseAndIdNot(name, id)) {
-            throw new AppException(ErrorCode.CONFLICT, "Category name already exists");
+            throw new AppException(ErrorCode.CONFLICT, "Tên danh mục đã tồn tại");
         }
         category.rename(name);
         return CategoryResponse.from(category);
@@ -56,13 +56,13 @@ public class CategoryService {
     public void delete(Long id) {
         Category category = findCategory(id);
         if (products.existsByCategoryId(id)) {
-            throw new AppException(ErrorCode.CONFLICT, "Cannot delete a category that has products");
+            throw new AppException(ErrorCode.CONFLICT, "Không thể xóa danh mục đang có sản phẩm");
         }
         categories.delete(category);
     }
 
     private Category findCategory(Long id) {
         return categories.findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Category not found"));
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Không tìm thấy danh mục"));
     }
 }

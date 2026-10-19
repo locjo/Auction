@@ -33,46 +33,45 @@ public class ProductController {
     @GetMapping
     public ApiResponse<List<ProductResponse>> getPublicProducts(
             @RequestParam(required = false) String status,
-            @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) String keyword) {
         if (status != null && !"ACTIVE".equalsIgnoreCase(status)) {
-            throw new AppException(ErrorCode.INVALID_INPUT, "Public products only support status=ACTIVE");
+            throw new AppException(ErrorCode.INVALID_INPUT, "Chỉ hỗ trợ hiển thị sản phẩm có trạng thái ACTIVE");
         }
-        return ApiResponse.success("Products retrieved successfully",
-                productService.getPublicProducts(categoryId, keyword));
+        return ApiResponse.success("Lấy danh sách sản phẩm thành công",
+                productService.getPublicProducts(keyword));
     }
 
     @GetMapping("/{id}")
     public ApiResponse<ProductResponse> getPublicProduct(@PathVariable Long id) {
-        return ApiResponse.success("Product retrieved successfully", productService.getPublicProduct(id));
+        return ApiResponse.success("Lấy thông tin sản phẩm thành công", productService.getPublicProduct(id));
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<ProductResponse> create(@Valid @RequestBody CreateProductRequest request,
                                                Authentication authentication) {
-        return ApiResponse.success("Product submitted for review",
+        return ApiResponse.success("Gửi sản phẩm chờ duyệt thành công",
                 productService.create(authentication.getName(), request));
     }
 
     @GetMapping("/seller/me")
     public ApiResponse<List<ProductResponse>> getSellerProducts(Authentication authentication) {
-        return ApiResponse.success("Seller products retrieved successfully",
+        return ApiResponse.success("Lấy danh sách sản phẩm của người bán thành công",
                 productService.getSellerProducts(authentication.getName()));
     }
 
     @GetMapping("/admin/pending")
     public ApiResponse<List<ProductResponse>> getPendingProducts() {
-        return ApiResponse.success("Pending products retrieved successfully", productService.getPendingProducts());
+        return ApiResponse.success("Lấy danh sách sản phẩm chờ duyệt thành công", productService.getPendingProducts());
     }
 
     @PatchMapping("/admin/{id}/approve")
     public ApiResponse<ProductResponse> approve(@PathVariable Long id) {
-        return ApiResponse.success("Product approved successfully", productService.approve(id));
+        return ApiResponse.success("Duyệt sản phẩm thành công", productService.approve(id));
     }
 
     @PatchMapping("/admin/{id}/cancel")
     public ApiResponse<ProductResponse> cancel(@PathVariable Long id) {
-        return ApiResponse.success("Product cancelled successfully", productService.cancel(id));
+        return ApiResponse.success("Hủy sản phẩm thành công", productService.cancel(id));
     }
 }

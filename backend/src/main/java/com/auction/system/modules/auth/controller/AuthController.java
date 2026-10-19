@@ -37,18 +37,18 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<AuthResponse>> register(@Valid @RequestBody RegisterRequest request) {
         AuthService.AuthTokenPair tokens = authService.register(request);
-        return tokenResponse(HttpStatus.CREATED, "Registration successful", tokens);
+        return tokenResponse(HttpStatus.CREATED, "Đăng ký thành công", tokens);
     }
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<AuthResponse>> login(@Valid @RequestBody LoginRequest request) {
-        return tokenResponse(HttpStatus.OK, "Login successful", authService.login(request));
+        return tokenResponse(HttpStatus.OK, "Đăng nhập thành công", authService.login(request));
     }
 
     @PostMapping("/refresh")
     public ResponseEntity<ApiResponse<AuthResponse>> refresh(
             @CookieValue(name = REFRESH_COOKIE, required = false) String refreshToken) {
-        return tokenResponse(HttpStatus.OK, "Token refreshed", authService.refresh(refreshToken));
+        return tokenResponse(HttpStatus.OK, "Làm mới mã xác thực thành công", authService.refresh(refreshToken));
     }
 
     @PostMapping("/logout")
@@ -57,7 +57,7 @@ public class AuthController {
         authService.logout(refreshToken);
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, clearRefreshCookie().toString())
-                .body(ApiResponse.success("Logout successful", null));
+                .body(ApiResponse.success("Đăng xuất thành công", null));
     }
 
     private ResponseEntity<ApiResponse<AuthResponse>> tokenResponse(

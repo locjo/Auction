@@ -23,7 +23,7 @@ public class RateLimiterFilter extends OncePerRequestFilter {
     public RateLimiterFilter(@Value("${app.rate-limit.max-requests:120}") int maxRequests,
                              @Value("${app.rate-limit.window:1m}") Duration window) {
         if (maxRequests < 1 || window.isNegative() || window.isZero())
-            throw new IllegalArgumentException("Rate limit must be positive");
+            throw new IllegalArgumentException("Giới hạn truy cập phải lớn hơn 0");
         this.maxRequests = maxRequests;
         this.windowMillis = window.toMillis();
     }
@@ -44,7 +44,7 @@ public class RateLimiterFilter extends OncePerRequestFilter {
             response.setContentType("application/json");
             response.setHeader("Retry-After", Long.toString(Math.max(1,
                     (window.startedAt + windowMillis - now + 999) / 1000)));
-            response.getWriter().write("{\"success\":false,\"message\":\"Too many requests\"}");
+            response.getWriter().write("{\"success\":false,\"message\":\"Bạn gửi yêu cầu quá thường xuyên. Vui lòng thử lại sau.\"}");
             return;
         }
 

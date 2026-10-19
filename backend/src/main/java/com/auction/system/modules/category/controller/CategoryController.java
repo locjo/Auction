@@ -31,29 +31,29 @@ public class CategoryController {
 
     @GetMapping
     public ApiResponse<List<CategoryResponse>> getAll() {
-        return ApiResponse.success("Categories retrieved successfully", categoryService.getAll());
+        return ApiResponse.success("Lấy danh sách danh mục thành công", categoryService.getAll());
     }
 
     @GetMapping("/{id}")
     public ApiResponse<CategoryResponse> getById(@PathVariable Long id) {
-        return ApiResponse.success("Category retrieved successfully", categoryService.getById(id));
+        return ApiResponse.success("Lấy thông tin danh mục thành công", categoryService.getById(id));
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<CategoryResponse> create(@Valid @RequestBody CategoryRequest request) {
-        return ApiResponse.success("Category created successfully", categoryService.create(request));
+        return ApiResponse.success("Tạo danh mục thành công", categoryService.create(request));
     }
 
     @PutMapping("/{id}")
     public ApiResponse<CategoryResponse> update(@PathVariable Long id,
                                                 @Valid @RequestBody CategoryRequest request) {
-        return ApiResponse.success("Category updated successfully", categoryService.update(id, request));
+        return ApiResponse.success("Cập nhật danh mục thành công", categoryService.update(id, request));
     }
 
     @DeleteMapping("/{id}")
     public ApiResponse<Void> delete(@PathVariable Long id) {
         categoryService.delete(id);
-        return ApiResponse.success("Category deleted successfully", null);
+        return ApiResponse.success("Xóa danh mục thành công", null);
     }
 }

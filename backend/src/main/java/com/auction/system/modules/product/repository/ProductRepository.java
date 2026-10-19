@@ -6,19 +6,20 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.time.Instant;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
     boolean existsByCategoryId(Long categoryId);
 
     @Query("select p from Product p where p.status = :status " +
-            "and (:categoryId is null or p.category.id = :categoryId) " +
             "and (:keyword is null or lower(p.title) like lower(concat('%', :keyword, '%'))) " +
             "order by p.createdAt desc")
     List<Product> search(@Param("status") Product.Status status,
-                         @Param("categoryId") Long categoryId,
                          @Param("keyword") String keyword);
 
     List<Product> findByStatusOrderByCreatedAtAsc(Product.Status status);
+
+    List<Product> findByStatusAndStartTimeLessThanEqual(Product.Status status, Instant startTime);
 
     List<Product> findBySellerEmailIgnoreCaseOrderByCreatedAtDesc(String email);
 }
