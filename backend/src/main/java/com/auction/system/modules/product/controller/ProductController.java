@@ -34,11 +34,12 @@ public class ProductController {
     public ApiResponse<List<ProductResponse>> getPublicProducts(
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String keyword) {
-        if (status != null && !"ACTIVE".equalsIgnoreCase(status)) {
+        if (status != null && !"ACTIVE".equalsIgnoreCase(status)
+                && !"ALL".equalsIgnoreCase(status)) {
             throw new AppException(ErrorCode.INVALID_INPUT, "Chỉ hỗ trợ hiển thị sản phẩm có trạng thái ACTIVE");
         }
         return ApiResponse.success("Lấy danh sách sản phẩm thành công",
-                productService.getPublicProducts(keyword));
+                productService.getPublicProducts(keyword, "ALL".equalsIgnoreCase(status)));
     }
 
     @GetMapping("/{id}")
@@ -57,6 +58,12 @@ public class ProductController {
     @GetMapping("/seller/me")
     public ApiResponse<List<ProductResponse>> getSellerProducts(Authentication authentication) {
         return ApiResponse.success("Lấy danh sách sản phẩm của người bán thành công",
+                productService.getSellerProducts(authentication.getName()));
+    }
+
+    @GetMapping("/me")
+    public ApiResponse<List<ProductResponse>> getMyProducts(Authentication authentication) {
+        return ApiResponse.success("My products retrieved successfully",
                 productService.getSellerProducts(authentication.getName()));
     }
 

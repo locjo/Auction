@@ -18,13 +18,18 @@ public record ProductResponse(
         Instant startTime,
         Instant endTime,
         Product.Status status,
+        long bidCount,
         Instant createdAt
 ) {
     public static ProductResponse from(Product product) {
+        return from(product, 0);
+    }
+
+    public static ProductResponse from(Product product, long bidCount) {
         return new ProductResponse(product.getId(), product.getTitle(), product.getDescription(),
                 product.getCategory().getId(), product.getCategory().getName(),
                 product.getSeller().getId(), product.getSeller().getFullName(),
                 product.getInitialPrice(), product.getCurrentPrice(), product.getStartTime(),
-                product.getEndTime(), product.getStatus(), product.getCreatedAt());
+                product.getEndTime(), product.getStatus(), bidCount, product.getCreatedAt());
     }
 }

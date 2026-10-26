@@ -95,6 +95,10 @@ public class Product extends AuditableEntity {
         this.status = Status.ACTIVE;
     }
 
+    public void finish() {
+        this.status = Status.ENDED;
+    }
+
     public void cancel() {
         this.status = Status.CANCELLED;
     }

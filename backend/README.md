@@ -2,21 +2,21 @@
 
 ## Pinned runtime versions
 
-- Java 17 for compilation and runtime (`maven.compiler.release` is tied to `java.version`).
+- Java 21 for compilation and runtime (`maven.compiler.release` is tied to `java.version`).
 - Spring Boot 3.5.3, Maven Wrapper 3.10.0, Lombok 1.18.48, and JJWT 0.12.6.
-- Docker services use Eclipse Temurin 17, PostgreSQL 17, and Redis 7.
+- Docker services use Eclipse Temurin 21, PostgreSQL 17, and Redis 7.
 
-Spring Boot 3 / Java 17 backend for the online auction project. Base package: `com.auction.system`.
+Spring Boot 3 / Java 21 backend for the online auction project. Base package: `com.auction.system`.
 
 ## Run locally
 
 1. Start infrastructure from this directory: `docker compose up -d` (PostgreSQL and Redis).
-2. Start the API locally: `./mvnw spring-boot:run` (Windows: `mvnw.cmd spring-boot:run`). Install JDK 17 and set `JAVA_HOME` to its installation directory first; verify with `java -version`.
+2. Start the API locally: `./mvnw spring-boot:run` (Windows: `mvnw.cmd spring-boot:run`). Install JDK 21 and set `JAVA_HOME` to its installation directory first; verify with `java -version`.
 3. Check `http://localhost:8080/api/v1/health`.
 
-## Run with Java 17 runtime in Docker
+## Run with Java 21 runtime in Docker
 
-Build and start the backend from this directory with `docker compose up -d --build`. The `Dockerfile` builds and runs the API on Eclipse Temurin Java 17. The API container uses the same database and Redis connection defaults as `application.yaml`.
+Build and start the backend from this directory with `docker compose up -d --build`. The `Dockerfile` builds and runs the API on Eclipse Temurin Java 21. The API container uses the same database and Redis connection defaults as `application.yaml`.
 
 Database and server settings can be overridden with `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, `REDIS_HOST`, `REDIS_PORT`, and `SERVER_PORT`.
 
