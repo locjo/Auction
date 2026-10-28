@@ -1,4 +1,8 @@
 spring:
+  config:
+    # Load the ignored root .env for local runs (from either repo root or backend/).
+    # Docker Compose injects the same values through its env_file configuration.
+    import: "optional:file:../.env[.properties],optional:file:.env[.properties]"
   application:
     name: auction-system
   datasource:
@@ -16,16 +20,27 @@ spring:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope:
+              - openid
+              - profile
+              - email
 server:
   port: ${SERVER_PORT:8080}
 
 app:
   cors:
-    allowed-origin: ${FRONTEND_ORIGIN:http://localhost:5173}
+    allowed-origin: ${FRONTEND_ORIGIN:http://localhost:3000}
   auth:
     refresh-cookie:
-      secure: ${REFRESH_COOKIE_SECURE:false}
-      same-site: ${REFRESH_COOKIE_SAME_SITE:Lax}
+      secure: ${REFRESH_COOKIE_SECURE:true}
+      same-site: ${REFRESH_COOKIE_SAME_SITE:Strict}
   rate-limit:
     max-requests: ${RATE_LIMIT_MAX_REQUESTS:120}
     window: ${RATE_LIMIT_WINDOW:1m}
@@ -34,6 +49,8 @@ app:
     secret: ${JWT_SECRET:bG9jYWwtZGV2ZWxvcG1lbnQtc2VjcmV0LWZvci1hdWN0aW9uLXN5c3RlbS0zMg==}
     access-token-expiration: 15m
     refresh-token-expiration: 7d
+  oauth2:
+    frontend-redirect-url: ${OAUTH2_FRONTEND_REDIRECT_URL:http://localhost:3000/oauth2/redirect}
 
 logging:
   level:

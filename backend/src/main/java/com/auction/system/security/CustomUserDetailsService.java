@@ -24,7 +24,8 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     private record AuctionUserDetails(User user) implements UserDetails {
         @Override public List<SimpleGrantedAuthority> getAuthorities() {
-            return List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
+            String role = user.getRole().name();
+            return List.of(new SimpleGrantedAuthority(role.startsWith("ROLE_") ? role : "ROLE_" + role));
         }
         @Override public String getPassword() { return user.getPasswordHash(); }
         @Override public String getUsername() { return user.getEmail(); }

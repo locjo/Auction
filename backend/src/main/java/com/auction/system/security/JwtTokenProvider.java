@@ -39,7 +39,7 @@ public class JwtTokenProvider {
         Instant expiresAt = now.plus(ttl);
         String tokenId = UUID.randomUUID().toString();
         String value = Jwts.builder().id(tokenId).subject(user.getEmail()).claim("uid", user.getId())
-                .claim("role", user.getRole().name()).claim("type", type)
+                .claim("role", user.getRole().name()).claim("provider", user.getProvider().name()).claim("type", type)
                 .issuedAt(Date.from(now)).expiration(Date.from(expiresAt)).signWith(key).compact();
         return new IssuedToken(value, tokenId, expiresAt);
     }

@@ -20,6 +20,14 @@ Build and start the backend from this directory with `docker compose up -d --bui
 
 Database and server settings can be overridden with `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, `REDIS_HOST`, `REDIS_PORT`, and `SERVER_PORT`.
 
+## Google OAuth 2.0 client configuration
+
+The backend reads OAuth client credentials from `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`; do not put real credentials in `application.yaml` or commit a `.env` file. Copy the root `.env.example` to `.env` and fill in the values from your Google OAuth client. `application.yaml` imports this root `.env` for local runs from the repository root or `backend/`; Docker Compose also injects the values into the container.
+
+Register `http://localhost:8080/login/oauth2/code/google` as an authorized redirect URI in the Google OAuth client. The configured scopes are `openid`, `profile`, and `email`.
+
+Start the browser flow at `http://localhost:8080/oauth2/authorization/google`. On success, the backend creates or updates the local user, stores the seven-day refresh JWT in Redis under `refreshToken:{userId}`, sets it as an HttpOnly `Secure; SameSite=Strict` cookie at `/api/v1/auth/refresh`, and redirects to `http://localhost:3000/oauth2/redirect?token=...`. The OAuth refresh cookie always uses `Secure`, so the browser must accept Secure cookies for the origin (use HTTPS outside localhost).
+
 ## Package layout
 
 ```text

@@ -20,15 +20,15 @@ import java.time.Instant;
 @RequestMapping("/api/v1/auth")
 public class AuthController {
     private static final String REFRESH_COOKIE = "refreshToken";
-    private static final String REFRESH_COOKIE_PATH = "/api/v1/auth";
+    private static final String REFRESH_COOKIE_PATH = "/api/v1/auth/refresh";
 
     private final AuthService authService;
     private final boolean secureRefreshCookie;
     private final String refreshCookieSameSite;
 
     public AuthController(AuthService authService,
-                          @Value("${app.auth.refresh-cookie.secure:false}") boolean secureRefreshCookie,
-                          @Value("${app.auth.refresh-cookie.same-site:Lax}") String refreshCookieSameSite) {
+                          @Value("${app.auth.refresh-cookie.secure:true}") boolean secureRefreshCookie,
+                          @Value("${app.auth.refresh-cookie.same-site:Strict}") String refreshCookieSameSite) {
         this.authService = authService;
         this.secureRefreshCookie = secureRefreshCookie;
         this.refreshCookieSameSite = refreshCookieSameSite;

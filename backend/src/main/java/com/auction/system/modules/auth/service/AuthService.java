@@ -16,27 +16,23 @@ import com.auction.system.modules.user.repository.UserRepository;
 import com.auction.system.modules.wallet.entity.Wallet;
 import com.auction.system.modules.wallet.repository.WalletRepository;
 import com.auction.system.security.JwtTokenProvider;
+import com.auction.system.security.oauth2.GoogleOAuth2UserInfo;
+import org.springframework.data.redis.core.StringRedisTemplate;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class AuthService {
     private final UserRepository users;
     private final WalletRepository wallets;
     private final RefreshTokenRepository refreshTokens;
     private final PasswordEncoder passwordEncoder; 
     private final JwtTokenProvider jwtTokenProvider;
-
-    public AuthService(UserRepository users, WalletRepository wallets,
-                       RefreshTokenRepository refreshTokens, PasswordEncoder passwordEncoder,
-                       JwtTokenProvider jwtTokenProvider) {
-        this.users = users;
-        this.wallets = wallets;
-        this.refreshTokens = refreshTokens;
-        this.passwordEncoder = passwordEncoder;
-        this.jwtTokenProvider = jwtTokenProvider;
-    }
+    private final StringRedisTemplate redis;
+    private final OAuth2AccountService oauth2Accounts;
 
     @Transactional
     public AuthTokenPair register(RegisterRequest request) {
@@ -53,6 +49,13 @@ public class AuthService {
         if (user.getStatus() != User.Status.ACTIVE) throw new AppException(ErrorCode.ACCOUNT_LOCKED);
         return tokens(user);
     }
+
+    @Transactional
+    public AuthTokenPair loginWithGoogle(GoogleOAuth2UserInfo profile) {
+        User user = oauth2Accounts.findOrCreateGoogleUser(profile);
+        if (user.getStatus() != User.Status.ACTIVE) throw new AppException(ErrorCode.ACCOUNT_LOCKED);
+        return tokens(user);
+    }
     @Transactional
     public AuthTokenPair refresh(String refreshToken) {
         try {
@@ -64,6 +67,11 @@ public class AuthService {
                 throw new AppException(ErrorCode.INVALID_TOKEN);
             User user = users.findByEmailIgnoreCase(claims.getSubject()).orElseThrow(() -> new AppException(ErrorCode.INVALID_TOKEN));
             if (user.getStatus() != User.Status.ACTIVE) throw new AppException(ErrorCode.ACCOUNT_LOCKED);
+            // Google sessions are single-token-per-user in Redis; reject revoked or replaced tokens.
+            if (user.getProvider() == User.AuthProvider.GOOGLE
+                    && !refreshToken.equals(redis.opsForValue().get(redisKey(user.getId())))) {
+                throw new AppException(ErrorCode.INVALID_TOKEN);
+            }
             storedToken.revoke();
             return tokens(user);
         } catch (AppException ex) { throw ex; }
@@ -74,8 +82,13 @@ public class AuthService {
         if (refreshToken == null || refreshToken.isBlank()) return;
         try {
             Claims claims = jwtTokenProvider.parse(refreshToken);
-            if ("refresh".equals(claims.get("type", String.class)) && claims.getId() != null)
+            if ("refresh".equals(claims.get("type", String.class)) && claims.getId() != null) {
                 refreshTokens.deleteByTokenId(claims.getId());
+                users.findByEmailIgnoreCase(claims.getSubject()).ifPresent(user -> {
+                    String key = redisKey(user.getId());
+                    if (refreshToken.equals(redis.opsForValue().get(key))) redis.delete(key);
+                });
+            }
         } catch (JwtException | IllegalArgumentException ignored) {
             // Logout still clears the browser cookie for expired or malformed tokens.
         }
@@ -85,10 +98,14 @@ public class AuthService {
         String accessToken = jwtTokenProvider.createAccessToken(user);
         JwtTokenProvider.IssuedToken refreshToken = jwtTokenProvider.createRefreshToken(user);
         refreshTokens.save(new RefreshToken(refreshToken.tokenId(), user, refreshToken.expiresAt()));
+        long ttlSeconds = Math.max(1, java.time.Duration.between(java.time.Instant.now(), refreshToken.expiresAt()).toSeconds());
+        redis.opsForValue().set(redisKey(user.getId()), refreshToken.value(), java.time.Duration.ofSeconds(ttlSeconds));
         AuthResponse response = new AuthResponse("Bearer", accessToken, jwtTokenProvider.accessExpiresAt(),
                 new AuthResponse.UserInfo(user.getId(), user.getEmail(), user.getFullName(), user.getRole().name()));
         return new AuthTokenPair(response, refreshToken.value(), refreshToken.expiresAt());
     }
 
     public record AuthTokenPair(AuthResponse response, String refreshToken, java.time.Instant refreshTokenExpiresAt) {}
+
+    private String redisKey(Long userId) { return "refreshToken:" + userId; }
 }

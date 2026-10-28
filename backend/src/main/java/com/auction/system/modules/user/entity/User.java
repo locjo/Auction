@@ -17,6 +17,13 @@ public class User extends AuditableEntity {
     private String email;
     @Column(name = "password", nullable = false)
     private String passwordHash;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20, columnDefinition = "varchar(20) default 'LOCAL'")
+    private AuthProvider provider = AuthProvider.LOCAL;
+    @Column(name = "provider_id", length = 255)
+    private String providerId;
+    @Column(name = "avatar_url", length = 2048)
+    private String avatarUrl;
     @Column(name = "full_name", nullable = false, length = 100)
     private String fullName;
     @Column(length = 20)
@@ -28,6 +35,23 @@ public class User extends AuditableEntity {
     public User(String email, String passwordHash, String fullName, String phone) {
         this.email = email; this.passwordHash = passwordHash; this.fullName = fullName; this.phone = phone;
     }
+    public User(String email, String passwordHash, String fullName, String providerId, String avatarUrl, AuthProvider provider) {
+        this.email = email;
+        this.passwordHash = passwordHash;
+        this.fullName = fullName;
+        this.provider = provider;
+        this.providerId = providerId;
+        this.avatarUrl = avatarUrl;
+        this.role = Role.BIDDER;
+        this.status = Status.ACTIVE;
+    }
+    public void updateGoogleProfile(String fullName, String providerId, String avatarUrl) {
+        this.fullName = fullName;
+        this.provider = AuthProvider.GOOGLE;
+        this.providerId = providerId;
+        this.avatarUrl = avatarUrl;
+    }
+    public enum AuthProvider { GOOGLE, LOCAL }
     public enum Role { ADMIN, SELLER, BIDDER }
     public enum Status { ACTIVE, LOCKED, PENDING }
 }
