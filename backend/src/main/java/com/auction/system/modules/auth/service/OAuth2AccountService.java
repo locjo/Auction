@@ -1,5 +1,7 @@
 package com.auction.system.modules.auth.service;
 
+import com.auction.system.common.AuthProvider;
+
 import com.auction.system.modules.user.entity.User;
 import com.auction.system.modules.user.repository.UserRepository;
 import com.auction.system.modules.wallet.entity.Wallet;
@@ -27,7 +29,7 @@ public class OAuth2AccountService {
             // Keep the legacy NOT NULL password column satisfied with an undisclosed, random value.
             String unusableLocalPassword = passwordEncoder.encode(UUID.randomUUID().toString());
             user = users.save(new User(profile.email(), unusableLocalPassword, profile.name(),
-                    profile.providerId(), profile.picture(), User.AuthProvider.GOOGLE));
+                    profile.providerId(), profile.picture(), AuthProvider.GOOGLE));
             wallets.save(new Wallet(user));
         } else {
             user.updateGoogleProfile(profile.name(), profile.providerId(), profile.picture());

@@ -1,7 +1,10 @@
 package com.auction.system.modules.product.service;
 
-import com.auction.system.exception.AppException;
 import com.auction.system.exception.ErrorCode;
+import com.auction.system.common.ProductStatus;
+
+import com.auction.system.exception.AppException;
+
 import com.auction.system.modules.bid.repository.BidRepository;
 import com.auction.system.modules.category.entity.Category;
 import com.auction.system.modules.category.repository.CategoryRepository;
@@ -44,8 +47,8 @@ public class ProductService {
     public List<ProductResponse> getPublicProducts(String keyword, boolean includeEnded) {
         String normalizedKeyword = normalizeKeyword(keyword);
         List<Product> active = normalizedKeyword == null
-                ? products.findByStatusOrderByCreatedAtDesc(Product.Status.ACTIVE)
-                : products.searchByStatusAndKeyword(Product.Status.ACTIVE, normalizedKeyword);
+                ? products.findByStatusOrderByCreatedAtDesc(ProductStatus.ACTIVE)
+                : products.searchByStatusAndKeyword(ProductStatus.ACTIVE, normalizedKeyword);
         Instant now = Instant.now();
         List<Product> result = new ArrayList<>(active.stream()
                 .filter(product -> product.getEndTime().isAfter(now))
@@ -55,8 +58,8 @@ public class ProductService {
             result.addAll(active.stream()
                     .filter(product -> !product.getEndTime().isAfter(now))
                     .toList());
-            List<Product> ended = products.findByStatusOrderByCreatedAtDesc(Product.Status.ENDED);
-            List<Product> scheduled = products.findByStatusOrderByCreatedAtDesc(Product.Status.SCHEDULED);
+            List<Product> ended = products.findByStatusOrderByCreatedAtDesc(ProductStatus.ENDED);
+            List<Product> scheduled = products.findByStatusOrderByCreatedAtDesc(ProductStatus.SCHEDULED);
             if (normalizedKeyword != null) {
                 String keywordLower = normalizedKeyword.toLowerCase();
                 ended = ended.stream()
@@ -79,7 +82,7 @@ public class ProductService {
     @Transactional(readOnly = true)
     public ProductResponse getPublicProduct(Long id) {
         Product product = products.findById(id)
-                .filter(item -> item.getStatus() == Product.Status.ACTIVE
+                .filter(item -> item.getStatus() == ProductStatus.ACTIVE
                         && item.getEndTime().isAfter(Instant.now()))
                 .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Không tìm thấy sản phẩm"));
         return toResponse(product);
@@ -107,14 +110,14 @@ public class ProductService {
 
     @Transactional(readOnly = true)
     public List<ProductResponse> getPendingProducts() {
-        return products.findByStatusOrderByCreatedAtAsc(Product.Status.PENDING)
+        return products.findByStatusOrderByCreatedAtAsc(ProductStatus.PENDING)
                 .stream().map(this::toResponse).toList();
     }
 
     @Transactional
     public ProductResponse approve(Long id) {
         Product product = findProduct(id);
-        if (product.getStatus() != Product.Status.PENDING) {
+        if (product.getStatus() != ProductStatus.PENDING) {
             throw new AppException(ErrorCode.CONFLICT, "Chỉ có thể duyệt sản phẩm đang chờ duyệt");
         }
         product.approve(Instant.now());
@@ -125,23 +128,23 @@ public class ProductService {
     @Scheduled(fixedDelay = 5_000)
     public void activateScheduledProducts() {
         Instant now = Instant.now();
-        products.findByStatusAndStartTimeLessThanEqual(Product.Status.SCHEDULED, now)
+        products.findByStatusAndStartTimeLessThanEqual(ProductStatus.SCHEDULED, now)
                 .forEach(Product::activate);
     }
 
     @Transactional
     @Scheduled(fixedDelay = 5_000)
     public void finishExpiredProducts() {
-        products.findByStatusAndEndTimeLessThanEqual(Product.Status.ACTIVE, Instant.now())
+        products.findByStatusAndEndTimeLessThanEqual(ProductStatus.ACTIVE, Instant.now())
                 .forEach(Product::finish);
     }
 
     @Transactional
     public ProductResponse cancel(Long id) {
         Product product = findProduct(id);
-        if (product.getStatus() != Product.Status.PENDING
-                && product.getStatus() != Product.Status.SCHEDULED
-                && product.getStatus() != Product.Status.ACTIVE) {
+        if (product.getStatus() != ProductStatus.PENDING
+                && product.getStatus() != ProductStatus.SCHEDULED
+                && product.getStatus() != ProductStatus.ACTIVE) {
             throw new AppException(ErrorCode.CONFLICT, "Chỉ có thể hủy sản phẩm đang chờ duyệt, đã lên lịch hoặc đang đấu giá");
         }
         product.cancel();

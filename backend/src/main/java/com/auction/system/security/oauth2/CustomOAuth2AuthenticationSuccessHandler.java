@@ -27,7 +27,7 @@ public class CustomOAuth2AuthenticationSuccessHandler implements AuthenticationS
     private static final String COOKIE_PATH = "/api/v1/auth/refresh";
     private final AuthService authService;
 
-    @Value("${app.oauth2.frontend-redirect-url:http://localhost:3000/oauth2/redirect}")
+    @Value("${app.oauth2.frontend-redirect-url:http://localhost:5173/oauth2/redirect}")
     private String frontendRedirectUrl;
 
     @Override

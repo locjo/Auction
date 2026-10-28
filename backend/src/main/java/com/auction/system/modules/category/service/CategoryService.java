@@ -1,7 +1,9 @@
 package com.auction.system.modules.category.service;
 
-import com.auction.system.exception.AppException;
 import com.auction.system.exception.ErrorCode;
+
+import com.auction.system.exception.AppException;
+
 import com.auction.system.modules.category.dto.request.CategoryRequest;
 import com.auction.system.modules.category.dto.response.CategoryResponse;
 import com.auction.system.modules.category.entity.Category;

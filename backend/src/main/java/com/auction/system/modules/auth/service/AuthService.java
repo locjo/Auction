@@ -1,11 +1,15 @@
 package com.auction.system.modules.auth.service;
 
+import com.auction.system.exception.ErrorCode;
+import com.auction.system.common.AuthProvider;
+import com.auction.system.common.UserStatus;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.auction.system.exception.AppException;
-import com.auction.system.exception.ErrorCode;
+
 import com.auction.system.modules.auth.dto.request.LoginRequest;
 import com.auction.system.modules.auth.dto.request.RegisterRequest;
 import com.auction.system.modules.auth.dto.response.AuthResponse;
@@ -46,14 +50,14 @@ public class AuthService {
     public AuthTokenPair login(LoginRequest request) {
         User user = users.findByEmailIgnoreCase(request.email().trim().toLowerCase()).orElseThrow(() -> new AppException(ErrorCode.INVALID_CREDENTIALS));
         if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) throw new AppException(ErrorCode.INVALID_CREDENTIALS);
-        if (user.getStatus() != User.Status.ACTIVE) throw new AppException(ErrorCode.ACCOUNT_LOCKED);
+        if (user.getStatus() != UserStatus.ACTIVE) throw new AppException(ErrorCode.ACCOUNT_LOCKED);
         return tokens(user);
     }
 
     @Transactional
     public AuthTokenPair loginWithGoogle(GoogleOAuth2UserInfo profile) {
         User user = oauth2Accounts.findOrCreateGoogleUser(profile);
-        if (user.getStatus() != User.Status.ACTIVE) throw new AppException(ErrorCode.ACCOUNT_LOCKED);
+        if (user.getStatus() != UserStatus.ACTIVE) throw new AppException(ErrorCode.ACCOUNT_LOCKED);
         return tokens(user);
     }
     @Transactional
@@ -66,9 +70,9 @@ public class AuthService {
             if (storedToken.getExpiresAt().isBefore(java.time.Instant.now()))
                 throw new AppException(ErrorCode.INVALID_TOKEN);
             User user = users.findByEmailIgnoreCase(claims.getSubject()).orElseThrow(() -> new AppException(ErrorCode.INVALID_TOKEN));
-            if (user.getStatus() != User.Status.ACTIVE) throw new AppException(ErrorCode.ACCOUNT_LOCKED);
+            if (user.getStatus() != UserStatus.ACTIVE) throw new AppException(ErrorCode.ACCOUNT_LOCKED);
             // Google sessions are single-token-per-user in Redis; reject revoked or replaced tokens.
-            if (user.getProvider() == User.AuthProvider.GOOGLE
+            if (user.getProvider() == AuthProvider.GOOGLE
                     && !refreshToken.equals(redis.opsForValue().get(redisKey(user.getId())))) {
                 throw new AppException(ErrorCode.INVALID_TOKEN);
             }

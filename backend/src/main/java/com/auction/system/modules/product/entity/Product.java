@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 
 import com.auction.system.common.AuditableEntity;
+import com.auction.system.common.ProductStatus;
 import com.auction.system.modules.category.entity.Category;
 import com.auction.system.modules.user.entity.User;
 
@@ -64,7 +65,7 @@ public class Product extends AuditableEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
-    private Status status = Status.PENDING;
+    private ProductStatus status = ProductStatus.PENDING;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "winner_id")
@@ -84,28 +85,27 @@ public class Product extends AuditableEntity {
         this.currentPrice = initialPrice;
         this.startTime = startTime;
         this.endTime = endTime;
-        this.status = Status.PENDING;
+        this.status = ProductStatus.PENDING;
     }
 
     public void approve(Instant now) {
-        this.status = startTime.isAfter(now) ? Status.SCHEDULED : Status.ACTIVE;
+        this.status = startTime.isAfter(now) ? ProductStatus.SCHEDULED : ProductStatus.ACTIVE;
     }
 
     public void activate() {
-        this.status = Status.ACTIVE;
+        this.status = ProductStatus.ACTIVE;
     }
 
     public void finish() {
-        this.status = Status.ENDED;
+        this.status = ProductStatus.ENDED;
     }
 
     public void cancel() {
-        this.status = Status.CANCELLED;
+        this.status = ProductStatus.CANCELLED;
     }
 
     public void updateCurrentPrice(BigDecimal currentPrice) {
         this.currentPrice = currentPrice;
     }
 
-    public enum Status { PENDING, ACTIVE, SCHEDULED, ENDED, CANCELLED }
 }

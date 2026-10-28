@@ -1,5 +1,7 @@
 package com.auction.system.modules.product.dto.response;
 
+import com.auction.system.common.ProductStatus;
+
 import com.auction.system.modules.product.entity.Product;
 
 import java.math.BigDecimal;
@@ -17,7 +19,7 @@ public record ProductResponse(
         BigDecimal currentPrice,
         Instant startTime,
         Instant endTime,
-        Product.Status status,
+        ProductStatus status,
         long bidCount,
         Instant createdAt
 ) {

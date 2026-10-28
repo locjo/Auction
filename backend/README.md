@@ -26,7 +26,7 @@ The backend reads OAuth client credentials from `GOOGLE_CLIENT_ID` and `GOOGLE_C
 
 Register `http://localhost:8080/login/oauth2/code/google` as an authorized redirect URI in the Google OAuth client. The configured scopes are `openid`, `profile`, and `email`.
 
-Start the browser flow at `http://localhost:8080/oauth2/authorization/google`. On success, the backend creates or updates the local user, stores the seven-day refresh JWT in Redis under `refreshToken:{userId}`, sets it as an HttpOnly `Secure; SameSite=Strict` cookie at `/api/v1/auth/refresh`, and redirects to `http://localhost:3000/oauth2/redirect?token=...`. The OAuth refresh cookie always uses `Secure`, so the browser must accept Secure cookies for the origin (use HTTPS outside localhost).
+Start the browser flow at `http://localhost:8080/oauth2/authorization/google`. On success, the backend creates or updates the local user, stores the seven-day refresh JWT in Redis under `refreshToken:{userId}`, sets it as an HttpOnly `Secure; SameSite=Strict` cookie at `/api/v1/auth/refresh`, and redirects to `http://localhost:5173/oauth2/redirect?token=...`. Set `FRONTEND_ORIGIN` and `OAUTH2_FRONTEND_REDIRECT_URL` if the frontend runs at a different address. The OAuth refresh cookie always uses `Secure`, so the browser must accept Secure cookies for the origin (use HTTPS outside localhost).
 
 ## Package layout
 

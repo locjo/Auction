@@ -2,6 +2,9 @@ package com.auction.system.modules.user.entity;
 
 import jakarta.persistence.*;
 import com.auction.system.common.AuditableEntity;
+import com.auction.system.common.AuthProvider;
+import com.auction.system.common.UserRole;
+import com.auction.system.common.UserStatus;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -29,9 +32,9 @@ public class User extends AuditableEntity {
     @Column(length = 20)
     private String phone;
     @Enumerated(EnumType.STRING) @Column(nullable = false, length = 50)
-    private Role role = Role.BIDDER;
+    private UserRole role = UserRole.BIDDER;
     @Enumerated(EnumType.STRING) @Column(nullable = false, length = 50)
-    private Status status = Status.ACTIVE;
+    private UserStatus status = UserStatus.ACTIVE;
     public User(String email, String passwordHash, String fullName, String phone) {
         this.email = email; this.passwordHash = passwordHash; this.fullName = fullName; this.phone = phone;
     }
@@ -42,8 +45,8 @@ public class User extends AuditableEntity {
         this.provider = provider;
         this.providerId = providerId;
         this.avatarUrl = avatarUrl;
-        this.role = Role.BIDDER;
-        this.status = Status.ACTIVE;
+        this.role = UserRole.BIDDER;
+        this.status = UserStatus.ACTIVE;
     }
     public void updateGoogleProfile(String fullName, String providerId, String avatarUrl) {
         this.fullName = fullName;
@@ -51,7 +54,4 @@ public class User extends AuditableEntity {
         this.providerId = providerId;
         this.avatarUrl = avatarUrl;
     }
-    public enum AuthProvider { GOOGLE, LOCAL }
-    public enum Role { ADMIN, SELLER, BIDDER }
-    public enum Status { ACTIVE, LOCKED, PENDING }
 }

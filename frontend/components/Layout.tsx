@@ -5,6 +5,7 @@ import {
   LogOut,
   Menu,
   Search,
+  Store,
   UserRound,
   Wallet,
 } from "lucide-react";
@@ -19,6 +20,7 @@ interface LayoutProps {
   setPage: (page: AppPage) => void;
   user: UserInfo | null;
   onRegister: () => void;
+  onBecomeSeller: () => void;
   onSignOut: () => void;
 }
 
@@ -66,8 +68,9 @@ function HeaderActions({
   setPage,
   user,
   onRegister,
+  onBecomeSeller,
   onSignOut,
-}: Pick<LayoutProps, "setPage" | "user" | "onRegister" | "onSignOut">) {
+}: Pick<LayoutProps, "setPage" | "user" | "onRegister" | "onBecomeSeller" | "onSignOut">) {
   return (
     <div className="top-actions">
       <button className="icon-btn" aria-label="T&#236;m ki&#7871;m"><Search size={17} /></button>
@@ -83,7 +86,17 @@ function HeaderActions({
           {user ? (
             <>
               <div className="profile-identity"><strong>{user.fullName}</strong><span>{user.email}</span><small>{user.role}</small></div>
-              <button onClick={() => setPage("wallet")}><UserRound size={15} /> Th&#244;ng tin t&#224;i kho&#7843;n</button>
+              <button onClick={() => setPage("wallet")}><UserRound size={15} /> Th&#244;ng tin c&#225; nh&#226;n</button>
+              {user.role !== "SELLER" && user.role !== "ADMIN" && (
+                <button
+                  onClick={(event) => {
+                    event.currentTarget.closest("details")?.removeAttribute("open");
+                    onBecomeSeller();
+                  }}
+                >
+                  <Store size={15} /> Đăng ký trở thành seller
+                </button>
+              )}
               <button className="profile-signout" onClick={onSignOut}><LogOut size={15} /> &#272;&#259;ng xu&#7845;t</button>
             </>
           ) : (
@@ -119,6 +132,7 @@ export function Layout({
   setPage,
   user,
   onRegister,
+  onBecomeSeller,
   onSignOut,
 }: LayoutProps) {
   return (
@@ -130,6 +144,7 @@ export function Layout({
           setPage={setPage}
           user={user}
           onRegister={onRegister}
+          onBecomeSeller={onBecomeSeller}
           onSignOut={onSignOut}
         />
       </header>

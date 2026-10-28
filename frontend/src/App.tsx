@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import {
   BrowserRouter,
   Navigate,
@@ -13,6 +13,8 @@ import { AuthPage } from "../pages/AuthPage";
 import { HomePage } from "../pages/HomePage";
 import { WalletPage } from "../pages/WalletPage";
 import { AuctionRoomPage } from "../pages/AuctionRoomPage";
+import { OAuth2RedirectPage } from "../pages/OAuth2RedirectPage";
+import { SellerRegistrationPage } from "../pages/SellerRegistrationPage";
 import { authService } from "../service/authService";
 import { useAuthStore } from "../stores/authStore";
 
@@ -53,10 +55,10 @@ function AuctionApp() {
     );
   }
 
-  function finishAuthentication() {
+  const finishAuthentication = useCallback(() => {
     const redirect = new URLSearchParams(location.search).get("redirect");
     navigate(redirect?.startsWith("/auctions/") ? redirect : "/wallet");
-  }
+  }, [location.search, navigate]);
 
   function signOut() {
     clearSession();
@@ -70,9 +72,15 @@ function AuctionApp() {
       setPage={setPage}
       user={user}
       onRegister={() => navigate("/register")}
+      onBecomeSeller={() => navigate("/seller/register")}
       onSignOut={signOut}
     >
       <Routes>
+        <Route
+          path="/oauth2/redirect"
+          element={<OAuth2RedirectPage onSuccess={finishAuthentication} />}
+        />
+        <Route path="/seller/register" element={<SellerRegistrationPage />} />
         <Route path="/" element={<HomePage onSignIn={openAuction} />} />
         <Route path="/auctions/:id" element={<AuctionRoomPage />} />
         <Route

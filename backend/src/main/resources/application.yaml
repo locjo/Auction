@@ -36,7 +36,7 @@ server:
 
 app:
   cors:
-    allowed-origin: ${FRONTEND_ORIGIN:http://localhost:3000}
+    allowed-origin: ${FRONTEND_ORIGIN:http://localhost:5173}
   auth:
     refresh-cookie:
       secure: ${REFRESH_COOKIE_SECURE:true}
@@ -50,7 +50,7 @@ app:
     access-token-expiration: 15m
     refresh-token-expiration: 7d
   oauth2:
-    frontend-redirect-url: ${OAUTH2_FRONTEND_REDIRECT_URL:http://localhost:3000/oauth2/redirect}
+    frontend-redirect-url: ${OAUTH2_FRONTEND_REDIRECT_URL:http://localhost:5173/oauth2/redirect}
 
 logging:
   level:

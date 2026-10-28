@@ -1,5 +1,7 @@
 package com.auction.system.security;
 
+import com.auction.system.common.UserStatus;
+
 import com.auction.system.modules.user.entity.User;
 import com.auction.system.modules.user.repository.UserRepository;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -30,8 +32,8 @@ public class CustomUserDetailsService implements UserDetailsService {
         @Override public String getPassword() { return user.getPasswordHash(); }
         @Override public String getUsername() { return user.getEmail(); }
         @Override public boolean isAccountNonExpired() { return true; }
-        @Override public boolean isAccountNonLocked() { return user.getStatus() != User.Status.LOCKED; }
+        @Override public boolean isAccountNonLocked() { return user.getStatus() != UserStatus.LOCKED; }
         @Override public boolean isCredentialsNonExpired() { return true; }
-        @Override public boolean isEnabled() { return user.getStatus() == User.Status.ACTIVE; }
+        @Override public boolean isEnabled() { return user.getStatus() == UserStatus.ACTIVE; }
     }
 }

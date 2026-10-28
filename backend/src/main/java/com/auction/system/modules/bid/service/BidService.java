@@ -1,7 +1,10 @@
 package com.auction.system.modules.bid.service;
 
-import com.auction.system.exception.AppException;
 import com.auction.system.exception.ErrorCode;
+import com.auction.system.common.ProductStatus;
+
+import com.auction.system.exception.AppException;
+
 import com.auction.system.modules.bid.dto.request.PlaceBidRequest;
 import com.auction.system.modules.bid.dto.response.BidResponse;
 import com.auction.system.modules.bid.event.AuctionUpdatePayload;
@@ -43,7 +46,7 @@ public class BidService {
     public BidResponse placeBid(Long productId, String bidderEmail, PlaceBidRequest request) {
         Product product = products.findById(productId)
                 .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Không tìm thấy sản phẩm"));
-        if (product.getStatus() != Product.Status.ACTIVE
+        if (product.getStatus() != ProductStatus.ACTIVE
                 || !Instant.now().isBefore(product.getEndTime())
                 || Instant.now().isBefore(product.getStartTime())) {
             throw new AppException(ErrorCode.CONFLICT, "Sản phẩm hiện không hoạt động");
