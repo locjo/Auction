@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   BrowserRouter,
   Navigate,
@@ -15,6 +15,7 @@ import { WalletPage } from "../pages/WalletPage";
 import { AuctionRoomPage } from "../pages/AuctionRoomPage";
 import { OAuth2RedirectPage } from "../pages/OAuth2RedirectPage";
 import { SellerRegistrationPage } from "../pages/SellerRegistrationPage";
+import { AdminUsersPage } from "../pages/AdminUsersPage";
 import { authService } from "../service/authService";
 import { useAuthStore } from "../stores/authStore";
 
@@ -24,7 +25,10 @@ function AuctionApp() {
   const user = useAuthStore((state) => state.user);
   const setSession = useAuthStore((state) => state.setSession);
   const clearSession = useAuthStore((state) => state.clearSession);
-  const page: AppPage = location.pathname.startsWith("/wallet")
+  const [sessionReady, setSessionReady] = useState(false);
+  const page: AppPage = location.pathname.startsWith("/admin")
+    ? "admin"
+    : location.pathname.startsWith("/wallet")
     ? "wallet"
     : location.pathname.startsWith("/login") ||
         location.pathname.startsWith("/register")
@@ -35,7 +39,8 @@ function AuctionApp() {
     void authService
       .refresh()
       .then(setSession)
-      .catch(() => undefined);
+      .catch(() => undefined)
+      .finally(() => setSessionReady(true));
   }, [setSession]);
 
   function setPage(nextPage: AppPage) {
@@ -43,6 +48,7 @@ function AuctionApp() {
       home: "/",
       auth: "/login",
       wallet: "/wallet",
+      admin: "/admin/users",
     };
     navigate(routes[nextPage]);
   }
@@ -57,7 +63,10 @@ function AuctionApp() {
 
   const finishAuthentication = useCallback(() => {
     const redirect = new URLSearchParams(location.search).get("redirect");
-    navigate(redirect?.startsWith("/auctions/") ? redirect : "/wallet");
+    const isAuction = redirect?.startsWith("/auctions/");
+    const isAdmin = redirect === "/admin/users" && useAuthStore.getState().user?.role === "ADMIN";
+    const destination = isAuction || isAdmin ? redirect : null;
+    navigate(destination ?? "/wallet");
   }, [location.search, navigate]);
 
   function signOut() {
@@ -81,6 +90,7 @@ function AuctionApp() {
           element={<OAuth2RedirectPage onSuccess={finishAuthentication} />}
         />
         <Route path="/seller/register" element={<SellerRegistrationPage />} />
+        <Route path="/admin/users" element={sessionReady ? <AdminUsersPage user={user} /> : <div className="admin-loading">Đang kiểm tra phiên đăng nhập…</div>} />
         <Route path="/" element={<HomePage onSignIn={openAuction} />} />
         <Route path="/auctions/:id" element={<AuctionRoomPage />} />
         <Route

@@ -14,6 +14,7 @@ import com.auction.system.modules.bid.repository.BidRepository;
 import com.auction.system.modules.product.entity.Product;
 import com.auction.system.modules.product.repository.ProductRepository;
 import com.auction.system.modules.user.entity.User;
+import com.auction.system.modules.user.entity.KycStatus;
 import com.auction.system.modules.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.context.ApplicationEventPublisher;
@@ -62,6 +63,8 @@ public class BidService {
         if (product.getSeller().getId().equals(bidder.getId())) {
             throw new AppException(ErrorCode.FORBIDDEN, "Người bán không được đặt giá cho sản phẩm của mình");
         }
+        if (bidder.getKycStatus() != KycStatus.APPROVED || bidder.getStatus() != com.auction.system.common.UserStatus.ACTIVE)
+            throw new AppException(ErrorCode.FORBIDDEN, "KYC approval and an active account are required to bid");
         if (request.bidAmount().compareTo(product.getCurrentPrice()) <= 0) {
             throw new AppException(ErrorCode.INVALID_INPUT, "Giá đặt phải cao hơn giá hiện tại của sản phẩm");
         }

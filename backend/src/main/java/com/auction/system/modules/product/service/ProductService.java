@@ -13,6 +13,7 @@ import com.auction.system.modules.product.dto.response.ProductResponse;
 import com.auction.system.modules.product.entity.Product;
 import com.auction.system.modules.product.repository.ProductRepository;
 import com.auction.system.modules.user.entity.User;
+import com.auction.system.modules.user.entity.KycStatus;
 import com.auction.system.modules.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -95,6 +96,9 @@ public class ProductService {
         }
         User seller = users.findByEmailIgnoreCase(sellerEmail)
                 .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Không tìm thấy người bán"));
+        if (seller.getRole() != com.auction.system.common.UserRole.SELLER || seller.getKycStatus() != KycStatus.APPROVED
+                || seller.getStatus() != com.auction.system.common.UserStatus.ACTIVE)
+            throw new AppException(ErrorCode.FORBIDDEN, "Seller role, approved KYC, and an active account are required");
         Category category = categories.findById(request.categoryId())
                 .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Không tìm thấy danh mục"));
         Product product = products.save(new Product(seller, category, request.title().trim(),

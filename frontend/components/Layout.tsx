@@ -2,6 +2,7 @@ import {
   Bell,
   ChevronDown,
   Gavel,
+  ShieldCheck,
   LogOut,
   Menu,
   Search,
@@ -12,7 +13,7 @@ import {
 import type { ReactNode } from "react";
 import type { UserInfo } from "../types/auth";
 
-export type AppPage = "home" | "auth" | "wallet";
+export type AppPage = "home" | "auth" | "wallet" | "admin";
 
 interface LayoutProps {
   children: ReactNode;
@@ -51,7 +52,8 @@ function Brand({
 function MainNavigation({
   page,
   setPage,
-}: Pick<LayoutProps, "page" | "setPage">) {
+  user,
+}: Pick<LayoutProps, "page" | "setPage" | "user">) {
   return (
     <nav className="main-nav">
       <a
@@ -60,6 +62,11 @@ function MainNavigation({
       >
         Khám phá
       </a>
+      {user?.role === "ADMIN" && (
+        <a className={page === "admin" ? "active" : ""} onClick={() => setPage("admin")}>
+          <ShieldCheck size={14} /> Quản trị
+        </a>
+      )}
     </nav>
   );
 }
@@ -139,7 +146,7 @@ export function Layout({
     <div className="app-shell">
       <header className="topbar">
         <Brand onClick={() => setPage("home")} />
-        <MainNavigation page={page} setPage={setPage} />
+        <MainNavigation page={page} setPage={setPage} user={user} />
         <HeaderActions
           setPage={setPage}
           user={user}
